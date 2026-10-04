@@ -183,6 +183,34 @@ userInput.addEventListener('keydown', (e) => {
 });
 
 sendBtn.addEventListener('click', handleSend);
+// ========== Theme Toggle ==========
+const themeToggle = document.getElementById('themeToggle');
+const sunIcon = themeToggle?.querySelector('.sun-icon');
+const moonIcon = themeToggle?.querySelector('.moon-icon');
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('trueTalkTheme', theme);
+
+  if (theme === 'light') {
+    if (sunIcon) sunIcon.style.display = 'none';
+    if (moonIcon) moonIcon.style.display = 'block';
+  } else {
+    if (sunIcon) sunIcon.style.display = 'block';
+    if (moonIcon) moonIcon.style.display = 'none';
+  }
+}
+
+// Load saved theme (default = dark)
+const savedTheme = localStorage.getItem('trueTalkTheme') || 'dark';
+setTheme(savedTheme);
+
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    setTheme(current === 'dark' ? 'light' : 'dark');
+  });
+}
 
 // ---------- Init ----------
 checkApiKey();
