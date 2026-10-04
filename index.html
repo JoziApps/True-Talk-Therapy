@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>True Talk Therapy – Consent</title>
+  <meta name="description" content="True Talk Therapy – A safe space for real talk. Free online mental support." />
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+  <link rel="apple-touch-icon" href="assets/logo.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="consent-page">
+  <div class="consent-container">
+    <img src="assets/logo.png" alt="True Talk Therapy Logo" class="logo" />
+
+    <h1>True Talk Therapy</h1>
+    <p class="tagline">A safe space for real talk. No judgment.</p>
+
+    <div class="disclaimer-box">
+      <h2>Important Notice</h2>
+      <ul>
+        <li>This is <strong>not</strong> professional therapy, counselling, or medical advice.</li>
+        <li>It is an AI-powered support tool for general emotional support and reflection.</li>
+        <li>If you are in crisis, feeling suicidal, or in immediate danger, please contact emergency services or SADAG immediately.</li>
+        <li><strong>SADAG 24-hour helpline:</strong> 0800 567 567</li>
+        <li>You must be 16 years or older to use this service.</li>
+      </ul>
+    </div>
+
+    <div class="consent-check">
+      <label>
+        <input type="checkbox" id="consentCheck" />
+        I understand that this is not professional therapy and I am using this tool at my own risk. I am 16 years or older.
+      </label>
+    </div>
+
+    <button id="enterBtn" class="btn-primary" disabled>
+      Enter True Talk Therapy
+    </button>
+
+    <p class="footer-note">
+      Built with care for people who need a late-night real talk space.<br />
+      Your conversations are not stored on our servers.
+    </p>
+  </div>
+
+  <script>
+    const checkbox = document.getElementById('consentCheck');
+    const enterBtn = document.getElementById('enterBtn');
+
+    checkbox.addEventListener('change', () => {
+      enterBtn.disabled = !checkbox.checked;
+    });
+
+    enterBtn.addEventListener('click', () => {
+      if (checkbox.checked) {
+        window.location.href = 'chat.html';
+      }
+    });
+  </script>
+</body>
+</html>
