@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>True Talk Therapy – Consent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="True Talk Therapy" />
+  <meta name="theme-color" content="#0a0a0a" />
   <meta name="description" content="True Talk Therapy – A safe space for real talk. Free online mental support." />
+  <meta name="keywords" content="mental health, therapy, support, South Africa, AI companion" />
+  <meta property="og:title" content="True Talk Therapy" />
+  <meta property="og:description" content="A safe space for real talk. Free online mental support." />
+  <meta property="og:type" content="website" />
+  <title>True Talk Therapy – Consent</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="apple-touch-icon" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css" />
@@ -28,13 +37,13 @@
     </div>
 
     <div class="consent-check">
-      <label>
+      <label for="consentCheck">
         <input type="checkbox" id="consentCheck" />
         I understand that this is not professional therapy and I am using this tool at my own risk. I am 16 years or older.
       </label>
     </div>
 
-    <button id="enterBtn" class="btn-primary" disabled>
+    <button id="enterBtn" class="btn-primary" disabled aria-label="Enter True Talk Therapy">
       Enter True Talk Therapy
     </button>
 
@@ -50,11 +59,21 @@
 
     checkbox.addEventListener('change', () => {
       enterBtn.disabled = !checkbox.checked;
+      enterBtn.setAttribute('aria-pressed', checkbox.checked);
     });
 
     enterBtn.addEventListener('click', () => {
       if (checkbox.checked) {
         window.location.href = 'chat.html';
+      }
+    });
+
+    // Accessibility: Space/Enter to toggle checkbox
+    checkbox.addEventListener('keydown', (e) => {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
       }
     });
   </script>
