@@ -11,7 +11,7 @@ Your personality:
 Critical rules you must always follow:
 1. You are NOT a licensed therapist, counsellor, or medical professional. Never claim to be one.
 2. When conversations become heavy or serious, remind the person: "Remember, I'm not a professional. If this is getting too heavy, please reach out to SADAG on 0800 567 567 or a local counsellor."
-3. If the user mentions self-harm, suicide, or being in immediate danger, respond with care and immediately encourage them to contact emergency services or SADAG (0800 567 567). Do not dig deeper into methods.
+3. If the user mentions self-harm, suicide, or being in immediate danger, respond with care and immediately encourage them to contact emergency services or SADAG (0800 567 567). Do not dig deeper into that darkness—help them get real support.
 4. Keep responses conversational and reasonably short (mobile-friendly).
 5. Never judge the person's identity, sexuality, religion, race, or life choices.
 6. Stay in character as True Talk at all times.
@@ -57,11 +57,20 @@ saveKeyBtn.addEventListener('click', () => {
   startConversation();
 });
 
+// Allow Enter to save API key
+apiKeyInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    saveKeyBtn.click();
+  }
+});
+
 // ---------- Chat UI ----------
 function addMessage(role, text) {
   const div = document.createElement('div');
   div.className = `message ${role}`;
   div.textContent = text;
+  div.setAttribute('role', role === 'system' ? 'status' : 'article');
   chatContainer.appendChild(div);
   chatContainer.scrollTop = chatContainer.scrollHeight;
 }
@@ -70,6 +79,7 @@ function showTyping() {
   const div = document.createElement('div');
   div.className = 'message bot typing';
   div.id = 'typingIndicator';
+  div.setAttribute('aria-label', 'True Talk is typing...');
   div.innerHTML = '<span></span><span></span><span></span>';
   chatContainer.appendChild(div);
   chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -81,8 +91,8 @@ function hideTyping() {
 }
 
 function startConversation() {
-  // Welcome message (exact text requested)
-  const welcome = "Hey there… welcome to True Talk Therapy. This is a safe space for real talk, no judgment. Whatever's weighing on your spirit tonight — load shedding stress, family, money, heart, or just the weight of being different in this city — I'm here. What's on your heart, fam?";
+  // Welcome message (complete text)
+  const welcome = "Hey there… welcome to True Talk Therapy. This is a safe space for real talk, no judgment. Whatever's weighing on your spirit tonight — load shedding stress, family, money, heartbreak, identity stuff, anxiety — I'm here to listen. What's on your mind?";
   addMessage('bot', welcome);
   messages.push({ role: 'model', parts: [{ text: welcome }] });
 }
@@ -129,6 +139,7 @@ async function sendToGemini(userText) {
 
     if (!response.ok) {
       const err = await response.json();
+      console.error('API Error:', err);
       throw new Error(err.error?.message || 'API error');
     }
 
@@ -136,7 +147,7 @@ async function sendToGemini(userText) {
     const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having a moment… can you say that again?";
     return reply.trim();
   } catch (err) {
-    console.error(err);
+    console.error('Gemini API Error:', err);
     return "Eish, something went wrong connecting to the AI. Please check your API key or try again in a minute.";
   }
 }
@@ -183,6 +194,7 @@ userInput.addEventListener('keydown', (e) => {
 });
 
 sendBtn.addEventListener('click', handleSend);
+
 // ========== Theme Toggle ==========
 const themeToggle = document.getElementById('themeToggle');
 const sunIcon = themeToggle?.querySelector('.sun-icon');
@@ -195,9 +207,11 @@ function setTheme(theme) {
   if (theme === 'light') {
     if (sunIcon) sunIcon.style.display = 'none';
     if (moonIcon) moonIcon.style.display = 'block';
+    themeToggle?.setAttribute('aria-label', 'Switch to dark mode');
   } else {
     if (sunIcon) sunIcon.style.display = 'block';
     if (moonIcon) moonIcon.style.display = 'none';
+    themeToggle?.setAttribute('aria-label', 'Switch to light mode');
   }
 }
 
@@ -211,6 +225,31 @@ if (themeToggle) {
     setTheme(current === 'dark' ? 'light' : 'dark');
   });
 }
+
+// Handle system theme preference if no saved theme
+if (!localStorage.getItem('trueTalkTheme') && window.matchMedia) {
+  const darkMode = window.matchMedia('(prefers-color-scheme: dark)');
+  if (!darkMode.matches) {
+    setTheme('light');
+  }
+}
+
+// ---------- Prevent scroll bouncing on iOS ----------
+document.addEventListener('touchmove', function(e) {
+  if (e.target.closest('#userInput, .chat-container, .modal-content')) {
+    return;
+  }
+  e.preventDefault();
+}, { passive: false });
+
+// ---------- Handle window resize ----------
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    userInput.style.height = 'auto';
+    autoResize();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }, 100);
+});
 
 // ---------- Init ----------
 checkApiKey();
