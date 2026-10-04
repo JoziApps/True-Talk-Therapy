@@ -1,0 +1,64 @@
+// api/chat.js
+const MODEL = 'gemini-3.5-flash';   // free-tier eligible; verify ID + quota in AI Studio
+const MAX_MESSAGE = 2000;
+const MAX_HISTORY = 20;             // cap turns to control token cost
+
+const SYSTEM_PROMPT = `You are True Talk, a warm, grounded, emotionally intelligent
+support companion for people in South Africa...`;  // ← paste current prompt, verbatim
+
+// --- rate limit (per warm instance; see "real rate limiting" below) ---
+const buckets = new Map();
+function rateLimit(ip) {
+  const now = Date.now();
+  const fresh = (buckets.get(ip) || []).filter(t => now - t < 60_000);
+  if (fresh.length >= 8) return true;
+  fresh.push(now);
+  buckets.set(ip, fresh);
+  if (buckets.size > 10_000) buckets.clear();
+  return false;
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'anon';
+  if (rateLimit(ip)) return res.status(429).json({ error: 'Too fast — take a breath.' });
+
+  const { message, history } = req.body || {};
+  if (typeof message !== 'string' || !message.trim() || message.length > MAX_MESSAGE)
+    return res.status(400).json({ error: 'Invalid message' });
+
+  const safeHistory = (Array.isArray(history) ? history : [])
+    .slice(-MAX_HISTORY)
+    .filter(m => m?.parts?.[0]?.text && (m.role === 'user' || m.role === 'model'))
+    .map(m => ({ role: m.role, parts: [{ text: String(m.parts[0].text).slice(0, 2000) }] }));
+
+  const contents = [
+    { role: 'user', parts: [{ text: SYSTEM_PROMPT }] },
+    { role: 'model', parts: [{ text: 'Understood. I am True Talk. I will follow all the rules you gave me.' }] },
+    ...safeHistory,
+    { role: 'user', parts: [{ text: message.trim() }] },
+  ];
+
+  try {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents, generationConfig: { temperature: 0.8, maxOutputTokens: 800 } }),
+      }
+    );
+    if (r.status === 429) return res.status(503).json({ error: 'AI busy', fallback: true });
+    if (!r.ok) { console.error('Gemini HTTP', r.status); return res.status(502).json({ error: 'AI hiccup' }); }
+
+    const data = await r.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+      || "I'm having a moment… can you say that again?";
+    return res.status(200).json({ reply });
+  } catch (e) {
+    console.error('Function error:', e.message);
+    return res.status(500).json({ error: 'Server error' });
+  }
+}
