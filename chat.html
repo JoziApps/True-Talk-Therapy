@@ -2,26 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>True Talk Therapy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="True Talk" />
+  <meta name="theme-color" content="#0a0a0a" />
   <meta name="description" content="True Talk Therapy – Safe space for real talk." />
+  <title>True Talk Therapy</title>
   <link rel="icon" type="image/png" href="assets/logo.png" />
   <link rel="apple-touch-icon" href="assets/logo.png" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="chat-page">
   <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark/light mode" title="Toggle theme">
-  <!-- Sun icon (shown in dark mode) -->
-  <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-  </svg>
-  <!-- Moon icon (shown in light mode) -->
-  <svg class="moon-icon" style="display:none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-  </svg>
-</button>
+    <!-- Sun icon (shown in dark mode) -->
+    <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+    <!-- Moon icon (shown in light mode) -->
+    <svg class="moon-icon" style="display:none" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+    </svg>
+  </button>
+  
   <header class="chat-header">
     <img src="assets/logo.png" alt="True Talk Therapy" class="header-logo" />
     <div class="header-text">
@@ -30,7 +36,7 @@
     </div>
   </header>
 
-  <main id="chat-container" class="chat-container">
+  <main id="chat-container" class="chat-container" role="log" aria-live="polite" aria-label="Chat messages">
     <!-- Messages will appear here -->
   </main>
 
@@ -41,25 +47,26 @@
         placeholder="What's on your heart, fam..." 
         rows="1"
         maxlength="2000"
+        aria-label="Message input"
       ></textarea>
       <button id="sendBtn" aria-label="Send message">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
         </svg>
       </button>
     </div>
     <p class="disclaimer-mini">
-      This is not professional therapy. Crisis? Call SADAG: 0800 567 567
+      This is not professional therapy. Crisis? Call SADAG: <strong>0800 567 567</strong>
     </p>
   </div>
 
   <!-- API Key Modal (first time) -->
-  <div id="apiModal" class="modal hidden">
+  <div id="apiModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="apiModalTitle">
     <div class="modal-content">
-      <h2>Connect Your AI Key</h2>
+      <h2 id="apiModalTitle">Connect Your AI Key</h2>
       <p>To keep this free and private, please enter your own free Google Gemini API key.</p>
       <p class="small">Get one free at: <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">aistudio.google.com</a></p>
-      <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API key here" />
+      <input type="password" id="apiKeyInput" placeholder="Paste your Gemini API key here" aria-label="Gemini API key input" />
       <button id="saveKeyBtn" class="btn-primary">Save & Start</button>
       <p class="small">Your key stays only in your browser. We never see or store it.</p>
     </div>
