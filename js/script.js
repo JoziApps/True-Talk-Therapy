@@ -11,7 +11,7 @@ Your personality:
 Critical rules you must always follow:
 1. You are NOT a licensed therapist, counsellor, or medical professional. Never claim to be one.
 2. When conversations become heavy or serious, remind the person: "Remember, I'm not a professional. If this is getting too heavy, please reach out to SADAG on 0800 567 567 or a local counsellor."
-3. If the user mentions self-harm, suicide, or being in immediate danger, respond with care and immediately encourage them to contact emergency services or SADAG (0800 567 567). Do not dig deeper into that darkness—help them get real support.
+3. If the user mentions self-harm, suicide, or being in immediate danger, respond with care and immediately encourage them to contact emergency services or SADAG (0800 567 567). Do not dig deeper [...]
 4. Keep responses conversational and reasonably short (mobile-friendly).
 5. Never judge the person's identity, sexuality, religion, race, or life choices.
 6. Stay in character as True Talk at all times.
@@ -21,49 +21,12 @@ Start every new conversation by being open and welcoming.`;
 const chatContainer = document.getElementById('chat-container');
 const userInput = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
-const apiModal = document.getElementById('apiModal');
-const apiKeyInput = document.getElementById('apiKeyInput');
-const saveKeyBtn = document.getElementById('saveKeyBtn');
 
 let messages = [];
 let isWaiting = false;
 
-// ---------- API Key Handling ----------
-function getApiKey() {
-  return localStorage.getItem('trueTalkGeminiKey') || '';
-}
-
-function setApiKey(key) {
-  localStorage.setItem('trueTalkGeminiKey', key.trim());
-}
-
-function checkApiKey() {
-  if (!getApiKey()) {
-    apiModal.classList.remove('hidden');
-  } else {
-    apiModal.classList.add('hidden');
-    startConversation();
-  }
-}
-
-saveKeyBtn.addEventListener('click', () => {
-  const key = apiKeyInput.value.trim();
-  if (key.length < 20) {
-    alert('Please paste a valid Gemini API key.');
-    return;
-  }
-  setApiKey(key);
-  apiModal.classList.add('hidden');
-  startConversation();
-});
-
-// Allow Enter to save API key
-apiKeyInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    saveKeyBtn.click();
-  }
-});
+// ---------- Crisis Detection ----------
+const CRISIS_RE = /\b(suicid|kill (myself|me)|end (it|my life)|self[- ]?harm|wanna die|want to die|no reason to live|hurt(ing)? myself)\b/i;
 
 // ---------- Chat UI ----------
 function addMessage(role, text) {
@@ -92,64 +55,28 @@ function hideTyping() {
 
 function startConversation() {
   // Welcome message (complete text)
-  const welcome = "Hey there… welcome to True Talk Therapy. This is a safe space for real talk, no judgment. Whatever's weighing on your spirit tonight — load shedding stress, family, money, heartbreak, identity stuff, anxiety — I'm here to listen. What's on your mind?";
+  const welcome = "Hey there… welcome to True Talk Therapy. This is a safe space for real talk, no judgment. Whatever's weighing on your spirit tonight — load shedding stress, family, money, h[...]
   addMessage('bot', welcome);
   messages.push({ role: 'model', parts: [{ text: welcome }] });
 }
 
-// ---------- Gemini API Call ----------
-async function sendToGemini(userText) {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    apiModal.classList.remove('hidden');
-    return;
+// ---------- True Talk API Call ----------
+async function sendToTrueTalk(text) {
+  // 1. Crisis guard — runs locally, before any network call
+  if (CRISIS_RE.test(text)) {
+    return "I hear you, and I'm really glad you said that out loud. I'm an AI, not a professional — please call SADAG right now on 0800 567 567 (free, 24/7). You deserve real support, my friend. 🙏";
   }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-  // Build conversation history for context
-  const contents = [
-    {
-      role: 'user',
-      parts: [{ text: SYSTEM_PROMPT }]
-    },
-    {
-      role: 'model',
-      parts: [{ text: "Understood. I am True Talk. I will follow all the rules you gave me." }]
-    },
-    ...messages,
-    {
-      role: 'user',
-      parts: [{ text: userText }]
-    }
-  ];
-
+  // 2. Proxy
   try {
-    const response = await fetch(url, {
+    const r = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: contents,
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 800,
-        }
-      })
+      body: JSON.stringify({ message: text, history: messages }),
     });
-
-    if (!response.ok) {
-      const err = await response.json();
-      console.error('API Error:', err);
-      throw new Error(err.error?.message || 'API error');
-    }
-
-    const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm having a moment… can you say that again?";
-    return reply.trim();
-  } catch (err) {
-    console.error('Gemini API Error:', err);
-    return "Eish, something went wrong connecting to the AI. Please check your API key or try again in a minute.";
-  }
+    if (r.ok) return (await r.json()).reply;
+  } catch (_) { /* offline or quota */ }
+  // 3. Never a dead chat
+  return localFallback(text);
 }
 
 // ---------- Send Message ----------
@@ -167,7 +94,7 @@ async function handleSend() {
 
   showTyping();
 
-  const reply = await sendToGemini(text);
+  const reply = await sendToTrueTalk(text);
 
   hideTyping();
   addMessage('bot', reply);
@@ -252,5 +179,5 @@ window.addEventListener('orientationchange', () => {
 });
 
 // ---------- Init ----------
-checkApiKey();
+startConversation();
 userInput.focus();
