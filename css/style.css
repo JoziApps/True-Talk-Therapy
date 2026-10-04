@@ -1,4 +1,3 @@
-/* True Talk Therapy – Dark Mobile-First Theme */
 /* True Talk Therapy – Themes */
 :root {
   /* Dark theme (default) */
@@ -207,6 +206,7 @@ html, body {
 }
 
 .chat-header {
+  position: relative;   /* ← add this line */
   display: flex;
   align-items: center;
   gap: 14px;
